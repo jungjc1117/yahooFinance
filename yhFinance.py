@@ -7,7 +7,7 @@ theme_map = {
     "NVDA": {"theme": "시스템반도체", "name": "NVIDIA"},
     "RMBS": {"theme": "CXL", "name": "Rambus"},
     "AMAT": {"theme": "유리기판", "name": "Applied Materials"},
-    "CBRS": {"theme": "퓨리오사 대안(세레브라스)", "name": "Cerebras"},
+    "CBRS": {"theme": "퓨리오사AI", "name": "Cerebras"},
     "MSFT": {"theme": "ChatGPT(AI)", "name": "Microsoft"},
     "IONQ": {"theme": "양자컴퓨터", "name": "IonQ"},
     "SDGR": {"theme": "AI신약개발", "name": "Schrodinger"},
@@ -25,7 +25,6 @@ theme_map = {
     "MRAY": {"theme": "MLCC", "name": "Murata Manufacturing"},
     "ISRG": {"theme": "지능형로봇", "name": "Intuitive Surgical"},
     "LMT": {"theme": "방산", "name": "Lockheed Martin"},
-    "ITA": {"theme": "대북(미국 방산 ETF)", "name": "iShares US Aerospace & Defense"},
     "RTX": {"theme": "우주/항공소재부품", "name": "RTX Corporation"},
     "HII": {"theme": "조선", "name": "Huntington Ingalls"},
     "CAT": {"theme": "조선기자재", "name": "Caterpillar"},
@@ -36,7 +35,8 @@ theme_map = {
     "CSCO": {"theme": "통신장비", "name": "Cisco Systems"},
     "DLR": {"theme": "데이터센터", "name": "Digital Realty"},
     "VRT": {"theme": "액침냉각", "name": "Vertiv Holdings"},
-    "COIN": {"theme": "스테이블코인", "name": "Coinbase"}
+    "COIN": {"theme": "스테이블코인", "name": "Coinbase"},
+    "IONQ": {"theme": "양자컴퓨터", "name": "IonQ"},
 }
 
 tickers = list(theme_map.keys())
@@ -89,9 +89,9 @@ for _, row in df_sorted.iterrows():
     table_rows += f"""
     <tr>
         <td class="theme">{row['Theme']} <span class="theme-change" style="color: {color};">({sign}{row['Change_Percent']:.2f}%)</span></td>
-        <td class="symbol">{row['Symbol']}</td>
+        <!--<td class="symbol">{row['Symbol']}</td>-->
         <td class="name">{row['Name']}</td>
-        <td class="price">${row['Price']:.2f}</td>
+        <!--<td class="price">${row['Price']:.2f}</td>-->
     </tr>
     """
 
@@ -126,9 +126,9 @@ html_template = f"""<!DOCTYPE html>
         <thead>
             <tr>
                 <th>테마명 (상승률%)</th>
-                <th>티커(Symbol)</th>
-                <th>대표 종목명</th>
-                <th style="text-align: right;">현재가</th>
+                <!--<th>티커(Symbol)</th>-->
+                <th>종목</th>
+                <!--<th style="text-align: right;">현재가</th>-->
             </tr>
         </thead>
         <tbody>
