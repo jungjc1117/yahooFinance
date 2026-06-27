@@ -1,7 +1,7 @@
 import os
 import yfinance as yf
 import pandas as pd
-from git import Repo  # Git 제어를 위한 라이브러리
+# ❌ from git import Repo (오류 원인 제거)
 
 # 1. 티커 리스트 정의
 tickers = ['NVDA', 'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'AVGO', 'TSLA', 'META', 'MU', 'LLY', 'WMT', 'JPM']
@@ -43,9 +43,8 @@ df_sorted = df.sort_values(by='Market Cap (USD)', ascending=False).reset_index(d
 table_rows = ""
 for _, row in df_sorted.iterrows():
     is_positive = row['Change %'] >= 0
-    color = '#d21926' if is_positive else '#117a3a'  # 상승 빨강, 하락 초록
+    color = '#d21926' if is_positive else '#117a3a'
     sign = '+' if is_positive else ''
-    
     formatted_market_cap = f"${row['Market Cap (USD)']:,.0f}"
     
     table_rows += f"""
@@ -104,21 +103,4 @@ html_filename = "index.html"
 with open(html_filename, "w", encoding="utf-8") as f:
     f.write(html_template)
 print("2. 로컬 index.html 파일 생성 완료.")
-
-# 6. Git을 사용하여 GitHub 저장소로 자동 Push
-try:
-    print("3. GitHub 저장소로 자동 푸시 시작...")
-    repo_path = os.getcwd()  # 현재 파이썬 코드가 실행 중인 폴더 위치
-    repo = Repo(repo_path)
-    
-    # 변경된 index.html 스테이징 및 커밋
-    repo.git.add(html_filename)
-    repo.index.commit("클라우드 우회 - 파이썬 기반 주가 데이터 자동 업데이트")
-    
-    # 원격 저장소(GitHub)로 푸시
-    origin = repo.remote(name='origin')
-    origin.push()
-    print("4. GitHub Pages 업데이트 최종 성공 완료!")
-    
-except Exception as git_error:
-    print(f"Git 푸시 중 오류 발생 (로컬 커밋은 완료됨): {git_error}")
+# ❌ 하단 try-except (Git Push) 영역 전체 삭제

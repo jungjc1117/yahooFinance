@@ -1,0 +1,38 @@
+name: Auto Update Stock Data (Every 5 Mins)
+
+on:
+  schedule:
+    # ⚠️ 이론상 매 5분마다 실행하라는 명령어입니다.
+    # 단, GitHub 서버 트래픽에 따라 5~10분 정도의 지연 실행이 발생할 수 있습니다.
+    - cron: "*/5 * * * *"
+  workflow_dispatch: # 수동 실행 버튼 유지
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 저장소 코드 가져오기 (Checkout)
+        uses: actions/checkout@v4
+
+      - name: 파이썬(Python) 환경 세팅
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: 필수 라이브러리 설치
+        run: |
+          pip install yfinance pandas
+
+      - name: 주가 수집 및 HTML 생성 스크립트 실행
+        run: python yhFinance.py
+
+      - name: 생성된 index.html을 내 저장소에 커밋 및 푸시
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add index.html
+          git diff-index --quiet HEAD || git commit -m "Auto-update stock data (5m intervals)"
+          git push
