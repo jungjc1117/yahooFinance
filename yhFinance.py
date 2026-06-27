@@ -1,92 +1,134 @@
-import os
 import yfinance as yf
 import pandas as pd
-# ❌ from git import Repo (오류 원인 제거)
 
-# 1. 티커 리스트 정의
-tickers = ['NVDA', 'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'AVGO', 'TSLA', 'META', 'MU', 'LLY', 'WMT', 'JPM']
+# 1. 유저 지정 테마 및 티커 매핑 데이터 정보
+theme_map = {
+    "MU": {"theme": "메모리반도체 / HBM / D램", "name": "Micron Technology"},
+    "NVDA": {"theme": "시스템반도체", "name": "NVIDIA"},
+    "RMBS": {"theme": "CXL", "name": "Rambus"},
+    "AMAT": {"theme": "유리기판", "name": "Applied Materials"},
+    "CBRS": {"theme": "퓨리오사 대안(세레브라스)", "name": "Cerebras"},
+    "MSFT": {"theme": "ChatGPT(AI)", "name": "Microsoft"},
+    "IONQ": {"theme": "양자컴퓨터", "name": "IonQ"},
+    "SDGR": {"theme": "AI신약개발", "name": "Schrodinger"},
+    "LLY": {"theme": "제약 / 비만치료제", "name": "Eli Lilly"},
+    "PFE": {"theme": "바이오시밀러", "name": "Pfizer"},
+    "TSLA": {"theme": "2차전지 / ESS / 전기차", "name": "Tesla"},
+    "QS": {"theme": "전고체배터리", "name": "QuantumScape"},
+    "ALB": {"theme": "리튬", "name": "Albemarle"},
+    "GEV": {"theme": "전력설비", "name": "GE Vernova"},
+    "ETN": {"theme": "변압기", "name": "Eaton Corporation"},
+    "CEG": {"theme": "원전", "name": "Constellation Energy"},
+    "SMR": {"theme": "SMR", "name": "NuScale Power"},
+    "CHPT": {"theme": "전기차인프라", "name": "ChargePoint"},
+    "GOOGL": {"theme": "자율주행", "name": "Alphabet"},
+    "MRAY": {"theme": "MLCC", "name": "Murata Manufacturing"},
+    "ISRG": {"theme": "지능형로봇", "name": "Intuitive Surgical"},
+    "LMT": {"theme": "방산", "name": "Lockheed Martin"},
+    "ITA": {"theme": "대북(미국 방산 ETF)", "name": "iShares US Aerospace & Defense"},
+    "RTX": {"theme": "우주/항공소재부품", "name": "RTX Corporation"},
+    "HII": {"theme": "조선", "name": "Huntington Ingalls"},
+    "CAT": {"theme": "조선기자재", "name": "Caterpillar"},
+    "AA": {"theme": "알루미늄", "name": "Alcoa"},
+    "FCX": {"theme": "구리", "name": "Freeport-McMoRan"},
+    "AMSC": {"theme": "초전도체", "name": "American Superconductor"},
+    "CRWD": {"theme": "인터넷 보안", "name": "CrowdStrike"},
+    "CSCO": {"theme": "통신장비", "name": "Cisco Systems"},
+    "DLR": {"theme": "데이터센터", "name": "Digital Realty"},
+    "VRT": {"theme": "액침냉각", "name": "Vertiv Holdings"},
+    "COIN": {"theme": "스테이블코인", "name": "Coinbase"}
+}
+
+tickers = list(theme_map.keys())
 stock_data = []
 
-print("1. 야후 파이낸스에서 실시간 데이터를 가져오는 중...")
-for ticker in tickers:
-    try:
-        stock = yf.Ticker(ticker)
-        info = stock.info
-        fast_info = stock.fast_info
-        
-        symbol = ticker
-        name = info.get('longName', 'N/A')
-        market_cap = info.get('marketCap', 0)
-        price = fast_info.get('lastPrice') or info.get('regularMarketPrice', 0)
-        prev_close = info.get('regularMarketPreviousClose')
-        
-        if price and prev_close:
-            change_percent = ((price - prev_close) / prev_close) * 100
-        else:
-            change_percent = 0.0
+print("야후 파이낸스에서 테마별 주가 정보를 가져오는 중...")
 
-        stock_data.append({
-            'Symbol': symbol,
-            'Name': name,
-            'Market Cap (USD)': market_cap,
-            'Price ($)': round(price, 2) if price else 0,
-            'Change %': round(change_percent, 2)
-        })
-    except Exception as e:
-        print(f"{ticker} 오류 발생: {e}")
+# 2. 다중 티커 패치 실행
+try:
+    for ticker in tickers:
+        try:
+            stock = yf.Ticker(ticker)
+            info = stock.info
+            fast_info = stock.fast_info
+            
+            price = fast_info.get('lastPrice') or info.get('regularMarketPrice', 0)
+            prev_close = info.get('regularMarketPreviousClose')
+            
+            if price and prev_close:
+                change_percent = ((price - prev_close) / prev_close) * 100
+            else:
+                change_percent = 0.0
+                
+            stock_data.append({
+                'Symbol': ticker,
+                'Name': theme_map[ticker]['name'],
+                'Theme': theme_map[ticker]['theme'],
+                'Price': round(price, 2) if price else 0,
+                'Change_Percent': round(change_percent, 2)
+            })
+        except Exception as e:
+            print(f"{ticker} 개별 패치 에러 무시: {e}")
+except Exception as e:
+    print(f"데이터 다운로드 중 치명적 오류: {e}")
 
-# 2. DataFrame 생성 및 시가총액 기준 내림차순 정렬
+# 3. DataFrame 변환 및 등락률 내림차순 정렬
 df = pd.DataFrame(stock_data)
-df_sorted = df.sort_values(by='Market Cap (USD)', ascending=False).reset_index(drop=True)
+if not df.empty:
+    df_sorted = df.sort_values(by='Change_Percent', ascending=False).reset_index(drop=True)
+else:
+    df_sorted = df
 
-# 3. HTML 테이블 행(Row) 문자열 동적 생성
+# 4. HTML 테이블 열 데이터 동적 주입
 table_rows = ""
 for _, row in df_sorted.iterrows():
-    is_positive = row['Change %'] >= 0
-    color = '#d21926' if is_positive else '#117a3a'
+    is_positive = row['Change_Percent'] >= 0
+    color = '#d21926' if is_positive else '#117a3a' # 상승 빨강, 하락 초록
     sign = '+' if is_positive else ''
-    formatted_market_cap = f"${row['Market Cap (USD)']:,.0f}"
     
     table_rows += f"""
     <tr>
+        <td class="theme">{row['Theme']} <span class="theme-change" style="color: {color};">({sign}{row['Change_Percent']:.2f}%)</span></td>
         <td class="symbol">{row['Symbol']}</td>
         <td class="name">{row['Name']}</td>
-        <td>${row['Price ($)']:.2f}</td>
-        <td style="color: {color}; font-weight: 600;">{sign}{row['Change %']:.2f}%</td>
-        <td>{formatted_market_cap}</td>
+        <td class="price">${row['Price']:.2f}</td>
     </tr>
     """
 
-# 4. 전체 index.html 파일 뼈대 작성
+# 5. 테마용 index.html 뼈대 코드 빌드
 html_template = f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>미국 주식 시가총액 대시보드</title>
+    <title>글로벌 트렌드 테마별 대시보드</title>
     <style>
         body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f6f8fa; margin: 0; padding: 20px; }}
         .container {{ max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }}
-        h1 {{ font-size: 24px; margin-bottom: 5px; color: #24292f; }}
+        h1 {{ font-size: 22px; margin-bottom: 5px; color: #24292f; text-align: center; }}
+        .subtitle {{ font-size: 13px; text-align: center; color: #57606a; margin-bottom: 20px; }}
         table {{ width: 100%; border-collapse: collapse; text-align: left; margin-top: 15px; }}
         th, td {{ padding: 12px 15px; border-bottom: 1px solid #d0d7de; }}
         th {{ background-color: #f6f8fa; color: #57606a; font-weight: 600; }}
         tr:hover {{ background-color: #f3f4f6; }}
+        .theme {{ font-weight: 600; color: #24292f; }}
+        .theme-change {{ font-size: 13px; font-weight: bold; margin-left: 5px; }}
         .symbol {{ font-weight: bold; color: #0969da; }}
-        .name {{ color: #24292f; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+        .name {{ color: #57606a; max-width: 230px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+        .price {{ font-weight: 500; text-align: right; }}
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>미국 주식 시가총액 TOP 12 (실시간 정렬)</h1>
+    <h1>글로벌 첨단 산업 핵심 테마 맵</h1>
+    <div class="subtitle">당일 전일 대비 상승률 기준 실시간 정렬 대시보드</div>
     <table>
         <thead>
             <tr>
-                <th>Symbol</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Change %</th>
-                <th>Market Cap</th>
+                <th>테마명 (상승률%)</th>
+                <th>티커(Symbol)</th>
+                <th>대표 종목명</th>
+                <th style="text-align: right;">현재가</th>
             </tr>
         </thead>
         <tbody>
@@ -98,9 +140,7 @@ html_template = f"""<!DOCTYPE html>
 </html>
 """
 
-# 5. 로컬 저장소 폴더에 index.html 저장
-html_filename = "index.html"
-with open(html_filename, "w", encoding="utf-8") as f:
+# 6. 결과 파일 덮어쓰기
+with open("index.html", "w", encoding="utf-8") as f:
     f.write(html_template)
-print("2. 로컬 index.html 파일 생성 완료.")
-# ❌ 하단 try-except (Git Push) 영역 전체 삭제
+print("index.html 테마 대시보드 파일 생성 완료.")

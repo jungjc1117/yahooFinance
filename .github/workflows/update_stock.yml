@@ -1,38 +1,39 @@
-name: Auto Update Stock Data (Every 5 Mins)
+name: Auto Update Stock Data (Theme Version)
 
 on:
   schedule:
-    # ⚠️ 이론상 매 5분마다 실행하라는 명령어입니다.
-    # 단, GitHub 서버 트래픽에 따라 5~10분 정도의 지연 실행이 발생할 수 있습니다.
+    # 매 5분마다 가상 스케줄러 동작 실행 지시 (지연 폭 감소 유도)
     - cron: "*/5 * * * *"
-  workflow_dispatch: # 수동 실행 버튼 유지
+  workflow_dispatch: # 수동 런 트리거 유지
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # 레포지토리 쓰기 권한 설정
 
     steps:
+      # ⭕ checkout v5 적용으로 Node.js 20 deprecation 에러 전면 해결
       - name: 저장소 코드 가져오기 (Checkout)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: 파이썬(Python) 환경 세팅
+      - name: 파이썬(Python) 가상 런타임 세팅
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      - name: 필수 라이브러리 설치
+      - name: 오픈소스 외부 라이브러리 의존성 설치
         run: |
           pip install yfinance pandas
 
-      - name: 주가 수집 및 HTML 생성 스크립트 실행
+      - name: 주가 추적 파싱 및 index.html 렌더링
         run: python yhFinance.py
 
-      - name: 생성된 index.html을 내 저장소에 커밋 및 푸시
+      - name: 변경 사항 감지 및 가상 커밋 생성 후 푸시
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add index.html
-          git diff-index --quiet HEAD || git commit -m "Auto-update stock data (5m intervals)"
+          # 변동 내용이 실존하는 경우에만 원격지 브랜치에 반영
+          git diff-index --quiet HEAD || git commit -m "Auto-update theme stock dashboard"
           git push
