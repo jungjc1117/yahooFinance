@@ -140,9 +140,11 @@ for _, row in df_stock.iterrows():
     stock_rows += f"""
     <tr>
         <td class="theme">{row['Theme']} <span class="theme-change" style="color: {color};">({sign}{row['Change_Percent']:.2f}%)</span></td>
+        <!--
         <td class="symbol">{row['Symbol']}</td>
         <td class="name">{row['Name']}</td>
         <td class="price">${row['Price']:.0f}</td>
+        -->
     </tr>
     """
 

@@ -1,39 +1,48 @@
-name: Auto Update Stock Data (Theme Version)
+name: Auto Update Stock Data (Force 5 Mins)
 
 on:
   schedule:
-    # 매 5분마다 가상 스케줄러 동작 실행 지시 (지연 폭 감소 유도)
-    - cron: "*/5 * * * *"
-  workflow_dispatch: # 수동 런 트리거 유지
+    # ⚠️ 몰리는 정각을 피하고 트래픽 분산을 위해 10분 간격으로 서버 가동을 지시합니다.
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # 수동 실행 버튼 유지
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # 레포지토리 쓰기 권한 설정
+      contents: write
 
     steps:
-      # ⭕ checkout v5 적용으로 Node.js 20 deprecation 에러 전면 해결
-      - name: 저장소 코드 가져오기 (Checkout)
-        uses: actions/checkout@v5
+    - name: 저장소 코드 가져오기 (Checkout)
+      uses: actions/checkout@v5
 
-      - name: 파이썬(Python) 가상 런타임 세팅
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+    - name: 파이썬(Python) 가상 런타임 세팅
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
 
-      - name: 오픈소스 외부 라이브러리 의존성 설치
-        run: |
-          pip install yfinance pandas
+    - name: 오픈소스 외부 라이브러리 의존성 설치
+      run: |
+        pip install yfinance pandas
 
-      - name: 주가 추적 파싱 및 index.html 렌더링
-        run: python yhFinance.py
+    # 1차 업데이트 (서버 켜지자마자 실행)
+    - name: [1차] 주가 수집 및 렌더링
+      run: |
+        python yhFinance.py
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add index.html
+        git diff-index --quiet HEAD || git commit -m "1st update"
+        git push || echo "No changes"
 
-      - name: 변경 사항 감지 및 가상 커밋 생성 후 푸시
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add index.html
-          # 변동 내용이 실존하는 경우에만 원격지 브랜치에 반영
-          git diff-index --quiet HEAD || git commit -m "Auto-update theme stock dashboard"
-          git push
+    # ⚠️ 정확히 5분(300초) 동안 의도적으로 가상 서버를 붙잡아 둡니다.
+    - name: ⏳ 5분 대기 (300초)
+      run: sleep 300
+
+    # 2차 업데이트 (정확히 5분 뒤 실행)
+    - name: [2차] 주가 수집 및 렌더링 (5분 뒤)
+      run: |
+        python yhFinance.py
+        git add index.html
+        git diff-index --quiet HEAD || git commit -m "2nd update (5m later)"
+        git push || echo "No changes"
