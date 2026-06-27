@@ -5,6 +5,10 @@ import pandas as pd
 index_map = {
     "CL=F": {"name": "원유값"},
     "^SOX": {"name": "필라델피아지수"},
+    "^VIX": {"name": "VIX"},
+    "^DJI": {"name": "다우"},
+    "^IXIC": {"name": "나스닥"},
+    "^GSPC": {"name": "S&P"},
     "EWY": {"name": "MSCI지수"},
     "KRW=X": {"name": "환율"},
     "^KS11": {"name": "KOSPI"},
@@ -15,17 +19,17 @@ index_map = {
 
 # [테이블 2] 기존 테마 및 티커 매핑
 theme_map = {
-    "MU": {"theme": "메모리반도체 / HBM / D램", "name": "Micron Technology"},
+    "MU": {"theme": "메모리반도체/HBM/D램", "name": "Micron Technology"},
     "NVDA": {"theme": "시스템반도체", "name": "NVIDIA"},
     "RMBS": {"theme": "CXL", "name": "Rambus"},
     "AMAT": {"theme": "유리기판", "name": "Applied Materials"},
-    "CBRS": {"theme": "퓨리오사 대안(세레브라스)", "name": "Cerebras"},
+    "CBRS": {"theme": "퓨리오사AI", "name": "Cerebras"},
     "MSFT": {"theme": "ChatGPT(AI)", "name": "Microsoft"},
     "IONQ": {"theme": "양자컴퓨터", "name": "IonQ"},
     "SDGR": {"theme": "AI신약개발", "name": "Schrodinger"},
-    "LLY": {"theme": "제약 / 비만치료제", "name": "Eli Lilly"},
+    "LLY": {"theme": "제약/비만치료제", "name": "Eli Lilly"},
     "PFE": {"theme": "바이오시밀러", "name": "Pfizer"},
-    "TSLA": {"theme": "2차전지 / ESS / 전기차", "name": "Tesla"},
+    "TSLA": {"theme": "2차전지/ESS/전기차", "name": "Tesla"},
     "QS": {"theme": "전고체배터리", "name": "QuantumScape"},
     "ALB": {"theme": "리튬", "name": "Albemarle"},
     "GEV": {"theme": "전력설비", "name": "GE Vernova"},
@@ -37,8 +41,7 @@ theme_map = {
     "MRAY": {"theme": "MLCC", "name": "Murata Manufacturing"},
     "ISRG": {"theme": "지능형로봇", "name": "Intuitive Surgical"},
     "LMT": {"theme": "방산", "name": "Lockheed Martin"},
-    "ITA": {"theme": "대북(미국 방산 ETF)", "name": "iShares US Aerospace & Defense"},
-    "RTX": {"theme": "우주/항공소재부품", "name": "RTX Corporation"},
+    "RTX": {"theme": "우주/항공", "name": "RTX Corporation"},
     "HII": {"theme": "조선", "name": "Huntington Ingalls"},
     "CAT": {"theme": "조선기자재", "name": "Caterpillar"},
     "AA": {"theme": "알루미늄", "name": "Alcoa"},
@@ -48,7 +51,10 @@ theme_map = {
     "CSCO": {"theme": "통신장비", "name": "Cisco Systems"},
     "DLR": {"theme": "데이터센터", "name": "Digital Realty"},
     "VRT": {"theme": "액침냉각", "name": "Vertiv Holdings"},
-    "COIN": {"theme": "스테이블코인", "name": "Coinbase"}
+    "COIN": {"theme": "스테이블코인", "name": "Coinbase"},
+    "IONQ": {"theme": "양자컴퓨터", "name": "IONQ"},
+    "GLW": {"theme": "유리기판", "name": "Corning"},
+    "COHR": {"theme": "광통신", "name": "Coherent"},
 }
 
 # 1. 데이터 수집 통합 실행
@@ -103,7 +109,7 @@ for ticker in stock_tickers:
         print(f"종목 {ticker} 에러 무시: {e}")
 
 # 2. 데이터프레임 생성 및 각각 상승률 기준 내림차순 정렬
-df_index = pd.DataFrame(index_data).sort_values(by='Change_Percent', ascending=False).reset_index(drop=True)
+df_index = pd.DataFrame(index_data).reset_index(drop=True)
 df_stock = pd.DataFrame(stock_data).sort_values(by='Change_Percent', ascending=False).reset_index(drop=True)
 
 # 3. HTML 테이블 생성 1 - 주요 지수 테이블
