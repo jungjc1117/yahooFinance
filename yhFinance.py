@@ -8,13 +8,13 @@ index_map = {
     "^VIX": {"name": "VIX"},
     "^DJI": {"name": "다우"},
     "^IXIC": {"name": "나스닥"},
-    "^GSPC": {"name": "S&P"},
+    "^GSPC": {"name": "S&P500"},
     "EWY": {"name": "MSCI지수"},
     "KRW=X": {"name": "환율"},
     "^KS11": {"name": "KOSPI"},
     "^KQ11": {"name": "KOSDAQ"},
-    "KMU26.KS": {"name": "KOSPI200선물(2609)"},
-    "KOU26.KS": {"name": "KOSDAQ150선물(2609)"}
+    "^KS200": {"name": "KOSPI200선물"},
+    "^KQ150": {"name": "KOSDAQ150선물"}
 }
 
 # [테이블 2] 기존 테마 및 티커 매핑
@@ -120,7 +120,7 @@ for _, row in df_index.iterrows():
     sign = '+' if is_positive else ''
     
     # 환율이나 원유값 등에 맞게 소수점 포맷 조절
-    formatted_price = f"{row['Price']:,.4f}" if row['Name'] == "환율" else f"{row['Price']:,.2f}"
+    formatted_price = f"{row['Price']:,.0f}"
     
     index_rows += f"""
     <tr>
@@ -142,7 +142,7 @@ for _, row in df_stock.iterrows():
         <td class="theme">{row['Theme']} <span class="theme-change" style="color: {color};">({sign}{row['Change_Percent']:.2f}%)</span></td>
         <td class="symbol">{row['Symbol']}</td>
         <td class="name">{row['Name']}</td>
-        <td class="price">${row['Price']:.2f}</td>
+        <td class="price">${row['Price']:.0f}</td>
     </tr>
     """
 
@@ -177,9 +177,9 @@ html_template = f"""<!DOCTYPE html>
     <table>
         <thead>
             <tr>
-                <th>구분 (이름)</th>
-                <th>당일 등락률 (Change %)</th>
-                <th style="text-align: right;">현재가 / 지수</th>
+                <th>구분</th>
+                <th>등락률</th>
+                <th style="text-align: right;">현재가</th>
             </tr>
         </thead>
         <tbody>
@@ -187,14 +187,16 @@ html_template = f"""<!DOCTYPE html>
         </tbody>
     </table>
 
-    <h2>🚀 첨단 산업 테마별 대표 종목 맵 (상승률순)</h2>
+    <h2>대표 종목 (상승률순)</h2>
     <table>
         <thead>
             <tr>
-                <th>테마명 (상승률%)</th>
+                <th>테마명 (상승률)</th>
+                <!--
                 <th>티커 (Symbol)</th>
                 <th>종목명</th>
                 <th style="text-align: right;">현재가</th>
+                -->
             </tr>
         </thead>
         <tbody>
